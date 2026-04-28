@@ -1,5 +1,47 @@
-venv/
+# ==============================
+# Python
+# ==============================
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+.env/
+
+# ==============================
+# Dataset (ignore heavy files)
+# ==============================
 dataset/
-*.pkl
+data/
+
+# ==============================
+# Model files
+# ==============================
+# ❌ DO NOT ignore entire model folder
+# model/   ← (this was your problem earlier)
+
+# Ignore large/unnecessary model artifacts (optional)
+*.h5
+*.pt
+*.onnx
+
+# ✅ Allow your trained model explicitly
+!model/
+!model/best_model.pkl
+!model/model_results.json
+!model/rag_corpus.json
+
+# ==============================
+# Logs / temp files
+# ==============================
+*.log
+*.tmp
+
+# ==============================
+# VS Code / system files
+# ==============================
+.vscode/
+.DS_Store
+Thumbs.db
