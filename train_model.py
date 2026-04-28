@@ -238,24 +238,51 @@ def save(pipelines, results, rag_corpus):
     best_name = max(results, key=lambda k: results[k]['f1'])
     print(f"\n★  Best model: {best_name}  (F1 {results[best_name]['f1']}%)")
 
-    with open(os.path.join(out, 'best_model.pkl'), 'wb') as f:
+    model_path = os.path.join(out, 'best_model.pkl')
+    results_path = os.path.join(out, 'model_results.json')
+    rag_path = os.path.join(out, 'rag_corpus.json')
+
+    # Save model
+    with open(model_path, 'wb') as f:
         pickle.dump(pipelines[best_name], f)
 
-    with open(os.path.join(out, 'model_results.json'), 'w') as f:
+    # Save results
+    with open(results_path, 'w') as f:
         json.dump({'results': results, 'best_model': best_name}, f, indent=2)
 
-    with open(os.path.join(out, 'rag_corpus.json'), 'w') as f:
+    # Save RAG
+    with open(rag_path, 'w') as f:
         json.dump(rag_corpus, f, indent=2)
 
-    print("   Saved: model/best_model.pkl")
-    print("   Saved: model/model_results.json")
-    print("   Saved: model/rag_corpus.json")
+    # 🔥 VERY IMPORTANT DEBUG PRINTS
+    print(f"   ✅ Model saved at: {model_path}")
+    print(f"   ✅ Results saved at: {results_path}")
+    print(f"   ✅ RAG saved at: {rag_path}")
 
+    # 🔥 VERIFY FILE EXISTS
+    if os.path.exists(model_path):
+        print("   🎯 Model file verified!")
+    else:
+        print("   ❌ Model NOT found after saving!")
 # ─────────────────────────────────────────────────────────────
 if __name__ == '__main__':
     print("\n── VibeMetrics 2.0 · Model Training ──────────────────")
-    df        = load_data()
+
+    df = load_data()
     pipelines, results = train(df)
-    rag       = build_rag_corpus(df)
+    rag = build_rag_corpus(df)
+
     save(pipelines, results, rag)
-    print("\n✅  Training complete!\n")
+
+    # 🔥 FINAL CHECK
+    model_file = os.path.join(BASE, 'model', 'best_model.pkl')
+
+    print("\n🔍 Final Check:")
+    print(f"Looking for: {model_file}")
+
+    if os.path.exists(model_file):
+        print("✅ SUCCESS: Model file exists and ready for deployment!")
+    else:
+        print("❌ ERROR: Model file missing. Check save path!")
+
+    print("\n✅ Training complete!\n")
