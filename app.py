@@ -22,8 +22,24 @@ stemmer = PorterStemmer()
 
 # ── App ───────────────────────────────────────────────────────
 app     = Flask(__name__)
-BASE    = os.path.dirname(os.path.abspath(__file__))
-MDL_DIR = os.path.join(BASE, 'model')
+BASE = os.path.dirname(os.path.abspath(__file__))
+
+# Try multiple possible locations (Render-safe)
+POSSIBLE_MODEL_DIRS = [
+    os.path.join(BASE, 'model'),
+    os.path.join(os.getcwd(), 'model'),
+    '/opt/render/project/src/model'  # Render default path
+]
+
+def get_model_dir():
+    for path in POSSIBLE_MODEL_DIRS:
+        if os.path.exists(path):
+            print(f"✅ Found model directory at: {path}")
+            return path
+    print("❌ Model directory NOT FOUND in any known location")
+    return os.path.join(BASE, 'model')
+
+MDL_DIR = get_model_dir()
 
 # ── Load artefacts ────────────────────────────────────────────
 def _load():
@@ -56,14 +72,16 @@ def _load():
     if os.path.exists(cp):
         with open(cp) as f:
             corpus = json.load(f)
+            print(f"📂 Using model directory: {MDL_DIR}")
 
     return model, meta, corpus
+
 
 def reload_model():
     global MODEL, META, RAG_CORPUS
     MODEL, META, RAG_CORPUS = _load()
 
-    
+
 # ── Text cleaning ─────────────────────────────────────────────
 def clean(text: str) -> str:
     text = str(text).lower()
