@@ -1,0 +1,35 @@
+{
+  "results": {
+    "Naive Bayes": {
+      "accuracy": 87.07,
+      "precision": 86.31,
+      "recall": 88.12,
+      "f1": 87.2
+    },
+    "Logistic Regression": {
+      "accuracy": 89.97,
+      "precision": 89.06,
+      "recall": 91.14,
+      "f1": 90.09
+    },
+    "SVM": {
+      "accuracy": 89.25,
+      "precision": 88.88,
+      "recall": 89.72,
+      "f1": 89.3
+    },
+    "Random Forest": {
+      "accuracy": 85.19,
+      "precision": 85.27,
+      "recall": 85.08,
+      "f1": 85.17
+    },
+    "KNN": {
+      "accuracy": 80.92,
+      "precision": 77.22,
+      "recall": 87.72,
+      "f1": 82.13
+    }
+  },
+  "best_model": "Logistic Regression"
+}

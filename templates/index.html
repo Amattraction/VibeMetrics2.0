@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>VibeMetrics 2.0 — Explainable Sentiment Analysis</title>
+  <link rel="stylesheet" href="{{ url_for('static',filename='css/style.css') }}"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+<!-- ═══════════════  NAV  ═══════════════ -->
+<nav class="nav">
+  <div class="nav__inner">
+    <a href="#" class="nav__brand">
+      <span class="nav__logo">⚡</span>
+      <span>VibeMetrics <sup>2.0</sup></span>
+    </a>
+    <div class="nav__links">
+      <a href="#analyze" class="nav__link">Analyze</a>
+      <a href="#models"  class="nav__link">Models</a>
+      <a href="#about"   class="nav__link">About</a>
+      <a href="https://github.com/your-username/vibemetrics-2.0"
+         target="_blank" class="btn btn--sm btn--outline">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.21 11.39.6.11.82-.26.82-.58v-2.23c-3.34.72-4.04-1.42-4.04-1.42-.54-1.39-1.33-1.76-1.33-1.76-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49.99.11-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 013-.4c1.02 0 2.04.13 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.82 1.1.82 2.22v3.29c0 .32.19.69.8.58C20.57 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/>
+        </svg>
+        GitHub
+      </a>
+    </div>
+    <button class="nav__hamburger" onclick="toggleMenu()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- ═══════════════  HERO  ══════════════ -->
+<header class="hero">
+  <div class="hero__particles" id="particles"></div>
+  <div class="hero__glow hero__glow--1"></div>
+  <div class="hero__glow hero__glow--2"></div>
+  <div class="hero__content">
+    <div class="chip chip--pulse">
+      <span class="chip__dot"></span>
+      MSc AI &amp; BDA · Minor Project · Dr. H.S. Gour Vishwavidyalaya, Sagar (M.P.)
+    </div>
+    <h1 class="hero__title">
+      Explainable<br>
+      <span class="text-gradient">Sentiment Analysis</span>
+    </h1>
+    <p class="hero__sub">
+      Go beyond labels. Understand <em>why</em> text is positive or negative —
+      through Aspect-Based Analysis and RAG-style evidence retrieval.
+    </p>
+    <div class="hero__badges">
+      <span class="badge">🧠 5 ML Models</span>
+      <span class="badge">📊 IMDB Dataset</span>
+      <span class="badge">🔍 Aspect Detection</span>
+      <span class="badge">💡 RAG Explanations</span>
+    </div>
+    <div class="hero__actions">
+      <a href="#analyze" class="btn btn--primary btn--lg">
+        Try Live Demo
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.5">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </a>
+      <a href="#models" class="btn btn--ghost btn--lg">See Models</a>
+    </div>
+  </div>
+  <div class="hero__scroll-hint">
+    <span>Scroll to analyze</span>
+    <div class="scroll-arrow"></div>
+  </div>
+</header>
+
+<!-- ═══════════════  ANALYZE  ═══════════ -->
+<section id="analyze" class="section">
+  <div class="container">
+    <div class="section__header">
+      <span class="section__label">01 · Sentiment Engine</span>
+      <h2 class="section__title">Analyze Any Text</h2>
+      <p class="section__sub">
+        Paste a review, tweet, comment, or any social media text.
+        Get an instant explainable sentiment report with word-level reasoning.
+      </p>
+    </div>
+
+    <!-- Input panel -->
+    <div class="panel" id="inputPanel">
+      <div class="panel__header">
+        <div class="panel__icon-wrap panel__icon-wrap--blue">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <path d="M12 20h9M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4 12.5-12.5z"/>
+          </svg>
+        </div>
+        <span class="panel__title">Input Text</span>
+        <span class="panel__counter" id="charCount">0 / 2000</span>
+      </div>
+
+      <textarea id="textInput" class="textarea" maxlength="2000" rows="5"
+        placeholder="e.g. This product is absolutely amazing! Fast delivery, outstanding quality. Highly recommend to everyone looking for great value for money."></textarea>
+
+      <div class="input-footer">
+        <div class="samples">
+          <span class="samples__label">Try a sample:</span>
+          <button class="tag tag--green" onclick="setSample('pos')">😊 Positive</button>
+          <button class="tag tag--red"   onclick="setSample('neg')">😞 Negative</button>
+          <button class="tag tag--gold"  onclick="setSample('mix')">🤔 Mixed</button>
+        </div>
+        <div class="input-footer__btns">
+          <button class="btn btn--ghost" onclick="clearInput()">Clear</button>
+          <button class="btn btn--primary" id="analyzeBtn" onclick="runAnalysis()">
+            <span class="btn__label">Analyze</span>
+            <span class="btn__spinner hidden">
+              <span class="spinner"></span>
+            </span>
+          </button>
+        </div>
+      </div>
+    </div><!-- /panel -->
+
+    <!-- Error -->
+    <div class="error-box hidden" id="errorBox"></div>
+
+    <!-- Results -->
+    <div class="results hidden" id="results">
+
+      <!-- Row 1: Verdict + Highlights -->
+      <div class="results__row results__row--top">
+
+        <!-- Verdict -->
+        <div class="panel verdict" id="verdictPanel">
+          <div class="verdict__emoji" id="verdictEmoji">😊</div>
+          <div class="verdict__label" id="verdictLabel">Positive</div>
+
+          <div class="ring-wrap">
+            <svg class="ring" viewBox="0 0 120 120">
+              <circle class="ring__track" cx="60" cy="60" r="48"/>
+              <circle class="ring__fill"  cx="60" cy="60" r="48"
+                      id="ringFill"
+                      stroke-dasharray="301.59"
+                      stroke-dashoffset="301.59"/>
+            </svg>
+            <div class="ring__center">
+              <span class="ring__num" id="ringNum">0</span>
+              <span class="ring__unit">%</span>
+            </div>
+          </div>
+
+          <p class="verdict__caption">Confidence Score</p>
+          <div class="verdict__stats" id="verdictStats">
+            <div class="vstat">
+              <span class="vstat__val" id="wCount">—</span>
+              <span class="vstat__key">Words</span>
+            </div>
+            <div class="vstat__div"></div>
+            <div class="vstat">
+              <span class="vstat__val" id="aCount">—</span>
+              <span class="vstat__key">Aspects</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Highlights -->
+        <div class="panel highlights">
+          <div class="panel__header">
+            <div class="panel__icon-wrap panel__icon-wrap--yellow">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+              </svg>
+            </div>
+            <span class="panel__title">Word-Level Highlights</span>
+          </div>
+          <div class="hl-text" id="hlText"></div>
+          <div class="hl-legend">
+            <span class="hl-legend__item hl-legend__item--pos">■ Positive signal</span>
+            <span class="hl-legend__item hl-legend__item--neg">■ Negative signal</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 2: Aspects + RAG -->
+      <div class="results__row results__row--bottom">
+
+        <!-- Aspects -->
+        <div class="panel aspects">
+          <div class="panel__header">
+            <div class="panel__icon-wrap panel__icon-wrap--purple">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2">
+                <path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"/>
+              </svg>
+            </div>
+            <span class="panel__title">Aspect-Based Analysis</span>
+          </div>
+          <div class="aspects__list" id="aspectsList"></div>
+        </div>
+
+        <!-- RAG -->
+        <div class="panel rag">
+          <div class="panel__header">
+            <div class="panel__icon-wrap panel__icon-wrap--teal">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+              </svg>
+            </div>
+            <span class="panel__title">Similar Examples</span>
+            <span class="chip chip--sm">RAG Retrieval</span>
+          </div>
+          <p class="rag__desc">
+            Supporting evidence retrieved from the training corpus
+            via keyword-overlap similarity:
+          </p>
+          <div class="rag__list" id="ragList"></div>
+        </div>
+      </div>
+
+    </div><!-- /results -->
+  </div>
+</section>
+
+<!-- ═══════════════  MODELS  ════════════ -->
+<section id="models" class="section section--alt">
+  <div class="container">
+    <div class="section__header">
+      <span class="section__label">02 · Model Comparison</span>
+      <h2 class="section__title">Performance Metrics</h2>
+      <p class="section__sub">
+        Five classifiers trained on IMDB reviews, evaluated on a 20 % held-out test set.
+        The best-performing model by F1 score is selected for live inference.
+      </p>
+    </div>
+
+    <div id="modelArea">
+      <div class="loading-row">
+        <span class="spinner spinner--dark"></span>
+        Loading model metrics…
+      </div>
+    </div>
+
+    <!-- Pipeline -->
+    <div class="pipeline">
+      <h3 class="pipeline__title">End-to-End System Pipeline</h3>
+      <div class="pipeline__steps">
+        <div class="pipe-step">
+          <div class="pipe-step__icon">📥</div>
+          <div class="pipe-step__name">Raw Input</div>
+          <div class="pipe-step__desc">Social media text / review</div>
+        </div>
+        <div class="pipe-step__arrow">›</div>
+        <div class="pipe-step">
+          <div class="pipe-step__icon">🧹</div>
+          <div class="pipe-step__name">Preprocessing</div>
+          <div class="pipe-step__desc">NLTK · Stopwords · Stemming</div>
+        </div>
+        <div class="pipe-step__arrow">›</div>
+        <div class="pipe-step">
+          <div class="pipe-step__icon">📐</div>
+          <div class="pipe-step__name">TF-IDF</div>
+          <div class="pipe-step__desc">15 k features · 1-2 grams</div>
+        </div>
+        <div class="pipe-step__arrow">›</div>
+        <div class="pipe-step">
+          <div class="pipe-step__icon">🤖</div>
+          <div class="pipe-step__name">ML Classifier</div>
+          <div class="pipe-step__desc">Best model selected</div>
+        </div>
+        <div class="pipe-step__arrow">›</div>
+        <div class="pipe-step">
+          <div class="pipe-step__icon">🔍</div>
+          <div class="pipe-step__name">RAG Retrieval</div>
+          <div class="pipe-step__desc">Jaccard overlap · corpus</div>
+        </div>
+        <div class="pipe-step__arrow">›</div>
+        <div class="pipe-step">
+          <div class="pipe-step__icon">💡</div>
+          <div class="pipe-step__name">Explanation</div>
+          <div class="pipe-step__desc">Aspects + evidence</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════  ABOUT  ═════════════ -->
+<section id="about" class="section">
+  <div class="container">
+    <div class="section__header">
+      <span class="section__label">03 · Project Information</span>
+      <h2 class="section__title">About VibeMetrics 2.0</h2>
+    </div>
+    <div class="about-grid">
+
+      <div class="about-card about-card--accent">
+        <div class="about-card__icon">🎓</div>
+        <h3>Academic Details</h3>
+        <table class="info-table">
+          <tr><td>Student</td><td><strong>Kashish Jain</strong></td></tr>
+          <tr><td>Reg. No.</td><td>Y25246002</td></tr>
+          <tr><td>Class</td><td>M.Sc. AI &amp; BDA — 2nd Sem</td></tr>
+          <tr><td>Course</td><td>CSA-SEC-222 (Minor Project)</td></tr>
+          <tr><td>Guide</td><td><strong>Dr. Abhishek Bansal</strong></td></tr>
+          <tr><td>Institution</td><td>Dr. H.S. Gour Vishwavidyalaya, Sagar (M.P.)</td></tr>
+        </table>
+      </div>
+
+      <div class="about-card">
+        <div class="about-card__icon">⚙️</div>
+        <h3>Tech Stack</h3>
+        <div class="tech-cloud">
+          <span class="tech">Python 3</span>
+          <span class="tech">Flask</span>
+          <span class="tech">scikit-learn</span>
+          <span class="tech">NLTK</span>
+          <span class="tech">TF-IDF</span>
+          <span class="tech">HTML 5</span>
+          <span class="tech">CSS 3</span>
+          <span class="tech">JavaScript</span>
+          <span class="tech">IMDB Dataset</span>
+          <span class="tech">GitHub Pages</span>
+          <span class="tech">VS Code</span>
+        </div>
+      </div>
+
+      <div class="about-card">
+        <div class="about-card__icon">🔬</div>
+        <h3>Key Features</h3>
+        <ul class="feature-list">
+          <li>Multi-model training &amp; automatic best-model selection</li>
+          <li>Aspect-Based Sentiment Analysis (7 categories)</li>
+          <li>RAG-style evidence retrieval from training corpus</li>
+          <li>Word-level positive/negative signal highlighting</li>
+          <li>Confidence scoring via sigmoid on decision boundary</li>
+          <li>Responsive, dark-mode professional UI</li>
+        </ul>
+      </div>
+
+      <div class="about-card">
+        <div class="about-card__icon">📊</div>
+        <h3>Dataset & Methodology</h3>
+        <p>
+          Trained on the <strong>IMDB Movie Reviews</strong> benchmark —
+          50 000 labelled reviews split evenly positive / negative.
+          Pre-processed with NLTK (lowercase, HTML stripping,
+          stop-word removal, Porter stemming) then vectorised with
+          TF-IDF (15 k features, 1–2 gram range, sublinear TF).
+          RAG retrieval uses Jaccard bag-of-words overlap — no
+          heavy embedding dependencies required.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════  FOOTER  ════════════ -->
+<footer class="footer">
+  <div class="container footer__inner">
+    <p class="footer__copy">
+      VibeMetrics 2.0 &nbsp;·&nbsp; Kashish Jain &nbsp;·&nbsp;
+      Dr. H.S. Gour Vishwavidyalaya, Sagar (M.P.) &nbsp;·&nbsp; 2025–26
+    </p>
+    <p class="footer__stack">Python · Flask · scikit-learn · NLTK · HTML · CSS · JavaScript</p>
+  </div>
+</footer>
+
+<script src="{{ url_for('static',filename='js/main.js') }}"></script>
+</body>
+</html>
