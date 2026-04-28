@@ -1,4 +1,4 @@
-import os, re, json, math, random
+import os, re, json, math
 import nltk
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
@@ -16,7 +16,6 @@ stemmer = PorterStemmer()
 app = Flask(__name__)
 BASE = os.path.dirname(os.path.abspath(__file__))
 
-# IMPORTANT: initialize globals
 MODEL = None
 RAG_CORPUS = []
 
@@ -59,7 +58,6 @@ def _load():
     else:
         print("⚠️ RAG not found")
 
-# 🔥 VERY IMPORTANT → LOAD MODEL ON START
 _load()
 
 # ── Text Cleaning ───────────────────────────────
@@ -70,21 +68,21 @@ def clean(text):
     text = re.sub(r'[@#]\w+', ' ', text)
     text = re.sub(r"[^a-z\s]", ' ', text)
     text = re.sub(r'\s+', ' ', text).strip()
-    return ' '.join(stemmer.stem(t) for t in text.split()
-                    if t not in STOPS and len(t) > 2)
+    return ' '.join(
+        stemmer.stem(t)
+        for t in text.split()
+        if t not in STOPS and len(t) > 2
+    )
 
 # ── Prediction ──────────────────────────────────
 def predict(text):
     if MODEL is None:
-    return jsonify({'error': 'Model still loading, try again'}), 503
+        raise Exception("Model not loaded")
 
     c = clean(text)
 
-    try:
-        clf = MODEL.named_steps['clf']
-        vec = MODEL.named_steps['tfidf']
-    except Exception as e:
-        raise Exception(f"Model structure error: {e}")
+    clf = MODEL.named_steps['clf']
+    vec = MODEL.named_steps['tfidf']
 
     X = vec.transform([c])
     pred = int(MODEL.predict([c])[0])
@@ -107,19 +105,34 @@ def index():
 
 @app.route('/model-info')
 def model_info():
-    if MODEL is None:
-        return jsonify({'trained': False})
-    return jsonify({'trained': True})
+    return jsonify({'trained': MODEL is not None})
 
 @app.route('/analyze', methods=['POST'])
-return jsonify({
-    'label': label,
-    'confidence': conf,
-    'aspects': [],
-    'similar': [],
-    'highlighted': [],
-    'word_count': len(text.split())
-})
+def analyze():
+    data = request.get_json(silent=True) or {}
+    text = (data.get('text') or '').strip()
+
+    if len(text) < 5:
+        return jsonify({'error': 'Enter valid text'}), 400
+
+    if MODEL is None:
+        return jsonify({'error': 'Model not loaded'}), 500
+
+    try:
+        pred, conf = predict(text)
+        label = 'Positive' if pred == 1 else 'Negative'
+
+        return jsonify({
+            'label': label,
+            'confidence': conf,
+            'aspects': [],
+            'similar': [],
+            'highlighted': [],
+            'word_count': len(text.split())
+        })
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/health')
 def health():
