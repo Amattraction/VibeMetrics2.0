@@ -76,7 +76,7 @@ def clean(text):
 # ── Prediction ──────────────────────────────────
 def predict(text):
     if MODEL is None:
-        raise Exception("Model not loaded")
+    return jsonify({'error': 'Model still loading, try again'}), 503
 
     c = clean(text)
 
@@ -105,28 +105,21 @@ def predict(text):
 def index():
     return render_template('index.html')
 
-@app.route('/analyze', methods=['POST'])
-def analyze():
-    data = request.get_json(silent=True) or {}
-    text = (data.get('text') or '').strip()
-
-    if len(text) < 5:
-        return jsonify({'error': 'Enter valid text'}), 400
-
+@app.route('/model-info')
+def model_info():
     if MODEL is None:
-        return jsonify({'error': 'Model not loaded'}), 500
+        return jsonify({'trained': False})
+    return jsonify({'trained': True})
 
-    try:
-        pred, conf = predict(text)
-        label = 'Positive' if pred == 1 else 'Negative'
-
-        return jsonify({
-            'label': label,
-            'confidence': conf
-        })
-
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+@app.route('/analyze', methods=['POST'])
+return jsonify({
+    'label': label,
+    'confidence': conf,
+    'aspects': [],
+    'similar': [],
+    'highlighted': [],
+    'word_count': len(text.split())
+})
 
 @app.route('/health')
 def health():
