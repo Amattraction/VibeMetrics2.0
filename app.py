@@ -28,19 +28,42 @@ MDL_DIR = os.path.join(BASE, 'model')
 # ── Load artefacts ────────────────────────────────────────────
 def _load():
     model, meta, corpus = None, {}, []
+
     mp = os.path.join(MDL_DIR, 'best_model.pkl')
     rp = os.path.join(MDL_DIR, 'model_results.json')
     cp = os.path.join(MDL_DIR, 'rag_corpus.json')
+
+    print("\n🔍 Loading model files...")
+    print(f"Looking for model at: {mp}")
+
+    # Load model
     if os.path.exists(mp):
-        with open(mp, 'rb') as f: model = pickle.load(f)
+        try:
+            with open(mp, 'rb') as f:
+                model = pickle.load(f)
+            print("✅ Model loaded successfully!")
+        except Exception as e:
+            print(f"❌ Error loading model: {e}")
+    else:
+        print("❌ Model file NOT FOUND")
+
+    # Load metadata
     if os.path.exists(rp):
-        with open(rp)       as f: meta  = json.load(f)
+        with open(rp) as f:
+            meta = json.load(f)
+
+    # Load corpus
     if os.path.exists(cp):
-        with open(cp)       as f: corpus = json.load(f)
+        with open(cp) as f:
+            corpus = json.load(f)
+
     return model, meta, corpus
 
-MODEL, META, RAG_CORPUS = _load()
+def reload_model():
+    global MODEL, META, RAG_CORPUS
+    MODEL, META, RAG_CORPUS = _load()
 
+    
 # ── Text cleaning ─────────────────────────────────────────────
 def clean(text: str) -> str:
     text = str(text).lower()
@@ -54,7 +77,10 @@ def clean(text: str) -> str:
 
 # ── Prediction + confidence ───────────────────────────────────
 def predict(text: str):
-    c    = clean(text)
+    if MODEL is None:
+        raise ValueError("Model is not loaded")
+
+    c = clean(text)
     clf  = MODEL.named_steps['clf']
     vec  = MODEL.named_steps['tfidf']
     X    = vec.transform([c])
@@ -188,8 +214,13 @@ def model_info():
 
 @app.route('/health')
 def health():
-    return jsonify({'status':'ok','model_loaded': MODEL is not None,
-                    'corpus_size': len(RAG_CORPUS)})
+    return jsonify({
+        'status': 'ok',
+        'model_loaded': MODEL is not None,
+        'model_path': os.path.join(MDL_DIR, 'best_model.pkl'),
+        'model_exists': os.path.exists(os.path.join(MDL_DIR, 'best_model.pkl')),
+        'corpus_size': len(RAG_CORPUS)
+    })
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
