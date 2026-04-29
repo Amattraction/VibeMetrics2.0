@@ -6,7 +6,7 @@ from flask import Flask, render_template, request, jsonify
 import joblib
 
 # ── NLTK ─────────────────────────────────────────
-for r in ['stopwords','punkt']:
+for r in ['stopwords', 'punkt']:
     nltk.download(r, quiet=True)
 
 STOPS = set(stopwords.words('english'))
@@ -74,6 +74,47 @@ def clean(text):
         if t not in STOPS and len(t) > 2
     )
 
+# ── Aspect Extraction ───────────────────────────
+def extract_aspects(text):
+    aspects = []
+
+    keywords = {
+        "quality": ["quality", "build", "material"],
+        "delivery": ["delivery", "shipping", "arrived"],
+        "price": ["price", "cost", "expensive", "cheap"],
+        "service": ["service", "support", "customer"]
+    }
+
+    t = text.lower()
+
+    for aspect, words in keywords.items():
+        for w in words:
+            if w in t:
+                aspects.append(aspect)
+                break
+
+    return aspects
+
+# ── RAG Retrieval ───────────────────────────────
+def retrieve_similar(text, top_k=2):
+    if not RAG_CORPUS:
+        return []
+
+    text_words = set(text.lower().split())
+    scored = []
+
+    for item in RAG_CORPUS:
+        corpus_text = item.get("text", "")
+        corpus_words = set(corpus_text.lower().split())
+
+        overlap = len(text_words & corpus_words)
+
+        if overlap > 0:
+            scored.append((overlap, corpus_text))
+
+    scored.sort(reverse=True)
+    return [s[1] for s in scored[:top_k]]
+
 # ── Prediction ──────────────────────────────────
 def predict(text):
     if MODEL is None:
@@ -125,14 +166,26 @@ def analyze():
         return jsonify({
             'label': label,
             'confidence': conf,
-            'aspects': [],
-            'similar': [],
+            'aspects': extract_aspects(text),
+            'similar': retrieve_similar(text),
             'highlighted': [],
             'word_count': len(text.split())
         })
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.route('/metrics')
+def metrics():
+    path = os.path.join(MDL_DIR, "model_results.json")
+
+    if not os.path.exists(path):
+        return jsonify([])
+
+    with open(path) as f:
+        data = json.load(f)
+
+    return jsonify(data)
 
 @app.route('/health')
 def health():
