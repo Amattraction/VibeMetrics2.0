@@ -4,6 +4,7 @@ from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 from flask import Flask, render_template, request, jsonify
 import joblib
+import random
 
 # ── NLTK ─────────────────────────────────────────
 for r in ['stopwords', 'punkt']:
@@ -74,9 +75,8 @@ def clean(text):
         if t not in STOPS and len(t) > 2
     )
 
-# ── Aspect Extraction ───────────────────────────
+# ── Aspect Extraction (FIXED) ────────────────────
 def extract_aspects(text):
-    import random
     aspects = []
 
     keywords = {
@@ -90,32 +90,35 @@ def extract_aspects(text):
 
     for aspect, words in keywords.items():
         if any(w in t for w in words):
+            score = random.randint(60, 95)
             aspects.append({
                 "aspect": aspect,
-                "score": random.randint(60, 95)
+                "score": score,
+                "percentage": score   # 🔥 FIX for frontend
             })
 
     return aspects
 
-# ── RAG Retrieval ───────────────────────────────
-def retrieve_similar(text, top_k=2):
+# ── RAG Retrieval (FIXED) ────────────────────────
+def retrieve_similar(text, top_k=3):
     if not RAG_CORPUS:
         return []
 
-    text_words = set(text.lower().split())
+    text = text.lower()
     scored = []
 
     for item in RAG_CORPUS:
-        corpus_text = item.get("text", "")
-        corpus_words = set(corpus_text.lower().split())
-
-        overlap = len(text_words & corpus_words)
-
-        if overlap > 0:
-            scored.append((overlap, corpus_text))
+        corpus_text = item.get("text", "").lower()
+        overlap = len(set(text.split()) & set(corpus_text.split()))
+        scored.append((overlap, corpus_text))
 
     scored.sort(reverse=True)
-    return [s[1] for s in scored[:top_k]]
+
+    return [
+        {"text": t}
+        for score, t in scored[:top_k]
+        if score > 0
+    ]
 
 # ── Prediction ──────────────────────────────────
 def predict(text):
@@ -177,6 +180,7 @@ def analyze():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+# ── Metrics Route (FIXED) ────────────────────────
 @app.route('/metrics')
 def metrics():
     path = os.path.join(MDL_DIR, "model_results.json")
@@ -184,11 +188,12 @@ def metrics():
     if not os.path.exists(path):
         return jsonify([])
 
-    with open(path) as f:
+    with open(path, "r") as f:
         data = json.load(f)
 
     return jsonify(data)
 
+# ── Health ──────────────────────────────────────
 @app.route('/health')
 def health():
     model_path = os.path.join(MDL_DIR, "best_model.pkl")
