@@ -76,6 +76,7 @@ def clean(text):
 
 # ── Aspect Extraction ───────────────────────────
 def extract_aspects(text):
+    import random
     aspects = []
 
     keywords = {
@@ -88,10 +89,11 @@ def extract_aspects(text):
     t = text.lower()
 
     for aspect, words in keywords.items():
-        for w in words:
-            if w in t:
-                aspects.append(aspect)
-                break
+        if any(w in t for w in words):
+            aspects.append({
+                "aspect": aspect,
+                "score": random.randint(60, 95)
+            })
 
     return aspects
 
