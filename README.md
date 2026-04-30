@@ -1,43 +1,54 @@
-# ⚡ VibeMetrics 2.0 — Explainable Sentiment Analysis
+# VibeMetrics 2.0 — Explainable Sentiment Analysis
 
-> **Minor Project** · MSc AI & BDA (2nd Sem) · CSA-SEC-222  
-> **Student:** Kashish Jain · Reg. No. Y25246002  
-> **Guide:** Dr. Abhishek Bansal  
-> **Institution:** Dr. Harisingh Gour Vishwavidyalaya, Sagar (M.P.)  
-
----
-
-## 📌 Overview
-
-VibeMetrics 2.0 is an **Explainable Sentiment Analysis** web application that goes beyond simple positive/negative labels. It reveals *why* a piece of text carries a particular sentiment using:
-
-- **Multi-model ML comparison** (Naive Bayes, Logistic Regression, SVM, Random Forest, KNN)  
-- **Aspect-Based Sentiment Analysis** (7 categories: Quality, Price, Service, Delivery, Performance, Design, Usability)  
-- **RAG-style evidence retrieval** (Jaccard overlap over training corpus — no heavy dependencies)  
-- **Word-level signal highlighting** (positive/negative word detection)  
-- **Confidence scoring** (sigmoid on SVM decision boundary)
+> **Minor Project** · MSc AI & BDA (2nd Semester) · Course: CSA-SEC-222
+> **Student:** Kashish Jain · Reg. No. Y25246002
+> **Supervisor:** Dr. Abhishek Bansal
+> **Institution:** Dr. Harisingh Gour Vishwavidyalaya, Sagar (M.P.)
+> **Live Demo:** https://vibemetrics-2-0.onrender.com
 
 ---
 
-## 🗂️ Project Structure
+## What This Project Does
+
+Standard sentiment classifiers return a label — *positive* or *negative* — with no explanation. VibeMetrics 2.0 addresses this by making the prediction **explainable** at three levels:
+
+1. **Word level** — highlights which specific words drove the classification
+2. **Aspect level** — identifies sentiment per category (Quality, Price, Service, Delivery, etc.)
+3. **Evidence level** — retrieves similar examples from the training corpus to support the prediction (RAG-style retrieval)
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Backend | Python 3, Flask |
+| ML | scikit-learn (TF-IDF + 5 classifiers) |
+| NLP Preprocessing | NLTK (stopwords, Porter stemming) |
+| Frontend | HTML, CSS, JavaScript (vanilla) |
+| Deployment | Render (backend), GitHub (version control) |
+| Dataset | IMDB Movie Reviews — 50,000 labelled samples |
+
+---
+
+## Project Structure
 
 ```
-vibemetrics2/
+VibeMetrics2.0/
 │
-├── app.py                  # Flask backend (API + routes)
-├── train_model.py          # Model training script
+├── app.py                  # Flask app — routes, inference, API
+├── train_model.py          # Trains all models, saves best by F1
+├── wsgi.py                 # Gunicorn entry point
+├── Procfile                # Render process config
 ├── requirements.txt        # Python dependencies
 │
-├── data/
-│   └── imdb.csv            # (optional) Place IMDB dataset here
-│
-├── model/                  # Auto-created after training
-│   ├── best_model.pkl
-│   ├── model_results.json
-│   └── rag_corpus.json
+├── model/
+│   ├── best_model.pkl      # Serialised best pipeline (TF-IDF + classifier)
+│   ├── model_results.json  # Accuracy / Precision / Recall / F1 for all models
+│   └── rag_corpus.json     # Sampled training examples for RAG retrieval
 │
 ├── templates/
-│   └── index.html          # Jinja2 template
+│   └── index.html          # Jinja2 HTML template
 │
 └── static/
     ├── css/style.css
@@ -46,132 +57,121 @@ vibemetrics2/
 
 ---
 
-## ⚙️ Setup & Run
+## How to Run Locally
 
-### 1 · Clone / open in VS Code
 ```bash
-git clone https://github.com/your-username/vibemetrics-2.0.git
-cd vibemetrics-2.0
-code .
-```
+# 1. Clone and open
+git clone https://github.com/Amattraction/VibeMetrics2.0.git
+cd VibeMetrics2.0
 
-### 2 · Create virtual environment
-```bash
+# 2. Create virtual environment
 python -m venv venv
+venv\Scripts\activate        # Windows
+source venv/bin/activate     # macOS / Linux
 
-# Windows
-venv\Scripts\activate
-
-# macOS / Linux
-source venv/bin/activate
-```
-
-### 3 · Install dependencies
-```bash
+# 3. Install dependencies
 pip install -r requirements.txt
-```
 
-### 4 · (Optional) Download IMDB dataset
-Download `IMDB Dataset.csv` from  
-https://www.kaggle.com/datasets/lakshmi25npathi/imdb-dataset-of-50k-movie-reviews  
-Rename it to `imdb.csv` and place it in the `data/` folder.  
-If absent, a synthetic 6 000-sample corpus is used automatically.
-
-### 5 · Train the model
-```bash
+# 4. Train the model (generates model/ artefacts)
 python train_model.py
-```
-This creates `model/best_model.pkl`, `model/model_results.json`, and `model/rag_corpus.json`.
 
-### 6 · Run the Flask app
-```bash
+# 5. Start the server
 python app.py
+# → http://localhost:5000
 ```
-Open **http://localhost:5000** in your browser.
+
+> The training script works without the IMDB CSV — it falls back to a balanced synthetic corpus. To use the full dataset, download `IMDB Dataset.csv` from [Kaggle](https://www.kaggle.com/datasets/lakshmi25npathi/imdb-dataset-of-50k-movie-reviews), rename it `imdb.csv`, and place it in a `data/` folder before running step 4.
 
 ---
 
-## 🔌 API Endpoints
+## ML Pipeline
+
+```
+Raw Text
+   │
+   ▼
+Preprocessing (NLTK)
+  • Lowercase, remove HTML / URLs / mentions
+  • Remove non-alphabetic characters
+  • Strip stopwords
+  • Porter stemming
+   │
+   ▼
+TF-IDF Vectorisation
+  • 15,000 features, unigrams + bigrams
+  • Sublinear TF scaling, min_df = 2
+   │
+   ▼
+Classifier  (best model selected by F1 on 20% held-out test set)
+  • Naive Bayes       (MultinomialNB)
+  • Logistic Regression
+  • SVM               (LinearSVC)
+  • Random Forest
+  • KNN
+   │
+   ▼
+Explainability Layer
+  • Word highlights   — lexicon-based positive/negative signal detection
+  • Aspect analysis   — keyword matching across 7 predefined aspect categories
+  • RAG retrieval     — Jaccard bag-of-words overlap against training corpus
+```
+
+---
+
+## API Endpoints
 
 | Method | Route | Description |
-|--------|-------|-------------|
-| GET | `/` | Main web UI |
-| POST | `/analyze` | Sentiment analysis `{ "text": "..." }` |
-| GET | `/model-info` | Model comparison metrics (JSON) |
-| GET | `/health` | Health check |
+|---|---|---|
+| `GET` | `/` | Serves the web UI |
+| `POST` | `/analyze` | Returns prediction + explanation for input text |
+| `GET` | `/metrics` | Returns model comparison results (JSON) |
+| `GET` | `/health` | Health check — confirms model load status |
 
-### Example `/analyze` response
+**Sample `/analyze` request:**
+```json
+{ "text": "Delivery was fast but the build quality feels cheap." }
+```
+
+**Sample `/analyze` response:**
 ```json
 {
-  "label": "Positive",
-  "confidence": 91.3,
+  "label": "Negative",
+  "confidence": 73.2,
   "aspects": [
-    { "aspect": "Quality",   "sentiment": "Positive", "confidence": 87.4 },
-    { "aspect": "Delivery",  "sentiment": "Positive", "confidence": 82.1 }
-  ],
-  "similar": [
-    "This product is really outstanding and arrived incredibly fast…"
+    { "aspect": "Delivery",    "sentiment": "Positive", "score": 81.4 },
+    { "aspect": "Quality",     "sentiment": "Negative", "score": 76.9 },
+    { "aspect": "Price/Value", "sentiment": "Negative", "score": 68.3 }
   ],
   "highlighted": [
-    { "word": "fantastic",    "type": "positive" },
-    { "word": "outstanding",  "type": "positive" }
+    { "word": "fast",  "type": "positive" },
+    { "word": "cheap", "type": "negative" }
   ],
-  "word_count": 24
+  "similar": [
+    "Shipped quickly but the material feels very flimsy for the price."
+  ],
+  "word_count": 12
 }
 ```
 
 ---
 
-## 🌐 GitHub Pages Deployment
+## Dataset
 
-The `docs/` folder contains a **static demo version** of the UI (no backend required).  
-To deploy:
-
-1. Push the repo to GitHub  
-2. Go to **Settings → Pages**  
-3. Set source to `main` branch, `/docs` folder  
-4. Your site will be live at `https://your-username.github.io/vibemetrics-2.0/`
-
-> Note: The static version shows the UI with sample data. The live analysis requires the Flask backend running locally or deployed to a server.
-
----
-
-## 🧠 Methodology
-
-### Preprocessing (NLTK)
-1. Lowercase conversion  
-2. HTML tag removal  
-3. URL / @mention / #hashtag stripping  
-4. Non-alphabetic character removal  
-5. Stop-word removal  
-6. Porter Stemming  
-
-### Feature Extraction
-- **TF-IDF Vectorizer**: 15 000 features, 1–2 gram range, sublinear TF, min_df=2
-
-### Models Compared
-| Model | Library |
-|-------|---------|
-| Naive Bayes | `sklearn.naive_bayes.MultinomialNB` |
-| Logistic Regression | `sklearn.linear_model.LogisticRegression` |
-| SVM | `sklearn.svm.LinearSVC` |
-| Random Forest | `sklearn.ensemble.RandomForestClassifier` |
-| KNN | `sklearn.neighbors.KNeighborsClassifier` |
-
-### RAG Explanation
-Evidence retrieval uses **Jaccard bag-of-words overlap** between the input and the training corpus — no sentence-transformers or FAISS required.
-
----
-
-## 📚 Dataset
-
-**IMDB Movie Reviews** (Maas et al., 2011)  
-- 50 000 labelled reviews (25 000 positive / 25 000 negative)  
-- Widely used NLP benchmark  
+**IMDB Movie Reviews** — Maas et al., 2011
+- 50,000 reviews, balanced: 25,000 positive / 25,000 negative
+- Standard benchmark for binary sentiment classification
 - Source: https://ai.stanford.edu/~amaas/data/sentiment/
 
 ---
 
-## 📄 License
+## Honest Limitations
 
-This project is submitted as an academic minor project. For educational use only.
+- The RAG retrieval uses Jaccard word-overlap, not dense embeddings — it is fast and dependency-free but less semantically precise than vector search.
+- Aspect sentiment is rule-based (keyword matching), not trained — it can misfire on sarcastic or complex sentences.
+- The model is trained on movie reviews; accuracy on domain-specific text (medical, legal, code) will be lower.
+
+---
+
+## License
+
+Submitted as an academic minor project. For educational use only.
