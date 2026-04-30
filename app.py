@@ -5,35 +5,38 @@ from nltk.stem import PorterStemmer
 from flask import Flask, render_template, request, jsonify
 import joblib
 
-# ── NLTK ──
-for r in ['stopwords','punkt']:
+# ── NLTK ─────────────────────────
+for r in ['stopwords', 'punkt']:
     nltk.download(r, quiet=True)
 
 STOPS = set(stopwords.words('english'))
 stemmer = PorterStemmer()
 
+# ── App ─────────────────────────
 app = Flask(__name__)
 BASE = os.path.dirname(os.path.abspath(__file__))
 
 MODEL = None
 RAG_CORPUS = []
 
-# ── MODEL PATH ──
+# ── Model Path ──────────────────
 POSSIBLE_MODEL_DIRS = [
     os.path.join(BASE, 'model'),
+    os.path.join(os.getcwd(), 'model'),
     '/opt/render/project/src/model'
 ]
 
 def get_model_dir():
-    for p in POSSIBLE_MODEL_DIRS:
-        if os.path.exists(p):
-            return p
+    for path in POSSIBLE_MODEL_DIRS:
+        if os.path.exists(path):
+            print(f"✅ Model dir: {path}")
+            return path
     return os.path.join(BASE, 'model')
 
 MDL_DIR = get_model_dir()
 
-# ── LOAD ──
-def load_all():
+# ── Load Model ──────────────────
+def load_model():
     global MODEL, RAG_CORPUS
 
     model_path = os.path.join(MDL_DIR, "best_model.pkl")
@@ -41,25 +44,39 @@ def load_all():
 
     if os.path.exists(model_path):
         MODEL = joblib.load(model_path)
+        print("✅ Model loaded")
+    else:
+        print("❌ Model missing")
 
     if os.path.exists(rag_path):
-        with open(rag_path) as f:
+        with open(rag_path, "r") as f:
             RAG_CORPUS = json.load(f)
+        print("✅ RAG loaded")
+    else:
+        print("⚠️ No RAG")
 
-load_all()
+load_model()
 
-# ── CLEAN ──
+# ── Clean Text ──────────────────
 def clean(text):
-    text = text.lower()
-    text = re.sub(r'[^a-z\s]', ' ', text)
+    text = str(text).lower()
+    text = re.sub(r'<[^>]+>', ' ', text)
+    text = re.sub(r'http\S+', ' ', text)
+    text = re.sub(r'[@#]\w+', ' ', text)
+    text = re.sub(r"[^a-z\s]", ' ', text)
+    text = re.sub(r'\s+', ' ', text).strip()
+
     return ' '.join(
         stemmer.stem(t)
         for t in text.split()
         if t not in STOPS and len(t) > 2
     )
 
-# ── PREDICT ──
+# ── Predict ─────────────────────
 def predict(text):
+    if MODEL is None:
+        raise Exception("Model not loaded")
+
     c = clean(text)
 
     clf = MODEL.named_steps['clf']
@@ -72,98 +89,112 @@ def predict(text):
         score = float(clf.decision_function(X)[0])
         prob = 1 / (1 + math.exp(-score))
         conf = prob if pred == 1 else 1 - prob
-    else:
+    elif hasattr(clf, 'predict_proba'):
         conf = float(max(clf.predict_proba(X)[0]))
+    else:
+        conf = 0.8
 
     return pred, round(conf * 100, 1)
 
-# ── ASPECTS ──
-ASPECT_KEYWORDS = {
-    "quality": ["quality","build","material"],
-    "delivery": ["delivery","shipping","late","fast"],
-    "price": ["price","cost","value"],
-    "service": ["support","service","help"]
-}
-
+# ── Aspect Extraction ───────────
 def extract_aspects(text):
-    t = text.lower()
-    aspects = []
+    aspects = {
+        "quality": ["quality", "build", "material"],
+        "delivery": ["delivery", "shipping", "late"],
+        "price": ["price", "cost", "cheap", "expensive"],
+        "service": ["service", "support", "help"]
+    }
 
-    for a, words in ASPECT_KEYWORDS.items():
-        score = sum(1 for w in words if w in t)
-        if score:
-            aspects.append({
-                "aspect": a,
-                "score": round(min(score * 30, 100),1)
-            })
+    text = text.lower()
+    results = []
 
-    return aspects
+    for aspect, words in aspects.items():
+        for w in words:
+            if w in text:
+                results.append({
+                    "aspect": aspect,
+                    "score": 0.8
+                })
+                break
 
-# ── RAG ──
+    return results
+
+# ── RAG Search ──────────────────
 def rag_search(text):
+    if not RAG_CORPUS:
+        return []
+
     t = clean(text).split()
     results = []
 
-    for item in RAG_CORPUS[:100]:
-        overlap = len(set(t) & set(item['text'].split()))
-        if overlap > 2:
-            results.append(item['text'])
+    for item in RAG_CORPUS:
+        corpus_text = item.get("text", "")
+        overlap = len(set(t) & set(corpus_text.split()))
+
+        if overlap > 1:
+            results.append({"text": corpus_text})
 
     return results[:3]
 
-# ── HIGHLIGHT ──
-POS_WORDS = ["good","great","amazing","excellent","fast"]
-NEG_WORDS = ["bad","poor","slow","worst","cheap"]
-
+# ── Highlight Words ─────────────
 def highlight(text):
     words = text.split()
-    out = []
+    highlights = []
 
     for w in words:
-        if w.lower() in POS_WORDS:
-            out.append({"word": w, "type": "pos"})
-        elif w.lower() in NEG_WORDS:
-            out.append({"word": w, "type": "neg"})
-        else:
-            out.append({"word": w, "type": "neu"})
-    return out
+        if w.lower() in ["good", "great", "amazing"]:
+            highlights.append({"word": w, "type": "positive"})
+        elif w.lower() in ["bad", "worst", "poor"]:
+            highlights.append({"word": w, "type": "negative"})
 
-# ── ROUTES ──
+    return highlights
+
+# ── Routes ──────────────────────
 @app.route('/')
-def home():
+def index():
     return render_template('index.html')
+
+@app.route('/model-info')
+def model_info():
+    return jsonify({'trained': MODEL is not None})
 
 @app.route('/analyze', methods=['POST'])
 def analyze():
-    data = request.get_json()
-    text = data.get('text','')
+    try:
+        data = request.get_json()
+        text = data.get('text', '').strip()
 
-    if not text or MODEL is None:
-        return jsonify({"error":"model not ready"}), 400
+        if len(text) < 5:
+            return jsonify({"error": "Enter valid text"}), 400
 
-    pred, conf = predict(text)
+        if MODEL is None:
+            return jsonify({"error": "Model not loaded"}), 500
 
-    return jsonify({
-        "label": "Positive" if pred==1 else "Negative",
-        "confidence": conf,
-        "aspects": extract_aspects(text),
-        "similar": rag_search(text),
-        "highlighted": highlight(text),
-        "word_count": len(text.split())
-    })
+        pred, conf = predict(text)
 
-@app.route('/metrics')
-def metrics():
-    return jsonify([
-        {"model":"LogReg","accuracy":0.88,"precision":0.87,"recall":0.89,"f1":0.88},
-        {"model":"NB","accuracy":0.84,"precision":0.83,"recall":0.85,"f1":0.84},
-        {"model":"SVM","accuracy":0.90,"precision":0.89,"recall":0.91,"f1":0.90}
-    ])
+        return jsonify({
+            "label": "Positive" if pred == 1 else "Negative",
+            "confidence": conf,
+            "aspects": extract_aspects(text),
+            "similar": rag_search(text),
+            "highlighted": highlight(text),
+            "word_count": len(text.split())
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/health')
 def health():
-    return jsonify({"status":"ok","model_loaded":MODEL is not None})
+    model_path = os.path.join(MDL_DIR, "best_model.pkl")
 
-# ── RUN ──
+    return jsonify({
+        "status": "ok",
+        "model_loaded": MODEL is not None,
+        "model_exists": os.path.exists(model_path),
+        "model_path": model_path
+    })
+
+# ── Run ─────────────────────────
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
