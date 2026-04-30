@@ -107,13 +107,13 @@
       <div class="input-footer">
         <div class="samples">
           <span class="samples__label">Try a sample:</span>
-          <button class="tag tag--green" onclick="setSample('pos')">😊 Positive</button>
-          <button class="tag tag--red"   onclick="setSample('neg')">😞 Negative</button>
-          <button class="tag tag--gold"  onclick="setSample('mix')">🤔 Mixed</button>
+          <button id="btnPos" class="tag tag--green">😊 Positive</button>
+          <button id="btnNeg" class="tag tag--red">😞 Negative</button>
+          <button id="btnMix" class="tag tag--gold">🤔 Mixed</button>
         </div>
         <div class="input-footer__btns">
-          <button class="btn btn--ghost" onclick="clearInput()">Clear</button>
-          <button class="btn btn--primary" id="analyzeBtn" onclick="runAnalysis()">
+          <button class="btn btn--ghost" id="clearBtn">Clear</button>
+          <button class="btn btn--primary" id="analyzeBtn">
             <span class="btn__label">Analyze</span>
             <span class="btn__spinner hidden">
               <span class="spinner"></span>
@@ -238,7 +238,7 @@
     </div>
 
     <div id="modelArea">
-  <table class="metrics-table">
+  <table class="model-table">
     <tr>
       <th>Model</th>
       <th>Accuracy</th>
