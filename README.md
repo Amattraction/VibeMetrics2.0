@@ -174,4 +174,5 @@ Explainability Layer
 
 ## License
 
+Kashish Jain (@Amattraction)
 Submitted as an academic minor project. For educational use only.
