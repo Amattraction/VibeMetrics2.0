@@ -19,8 +19,7 @@
     </a>
     <div class="nav__links">
       <a href="#analyze" class="nav__link">Analyze</a>
-      <a href="#models"  class="nav__link">Models</a>
-      <a href="#about"   class="nav__link">About</a>
+      
       <a href="https://github.com/Amattraction/VibeMetrics2.0"
          target="_blank" class="btn btn--sm btn--outline">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
@@ -41,10 +40,7 @@
   <div class="hero__glow hero__glow--1"></div>
   <div class="hero__glow hero__glow--2"></div>
   <div class="hero__content">
-    <div class="chip chip--pulse">
-      <span class="chip__dot"></span>
-      MSc AI &amp; BDA · Minor Project · Dr. H.S. Gour Vishwavidyalaya, Sagar (M.P.)
-    </div>
+    
     <h1 class="hero__title">
       Explainable<br>
       <span class="text-gradient">Sentiment Analysis</span>
@@ -53,12 +49,7 @@
       Go beyond labels. Understand <em>why</em> text is positive or negative —
       through Aspect-Based Analysis and RAG-style evidence retrieval.
     </p>
-    <div class="hero__badges">
-      <span class="badge">🧠 5 ML Models</span>
-      <span class="badge">📊 IMDB Dataset</span>
-      <span class="badge">🔍 Aspect Detection</span>
-      <span class="badge">💡 RAG Explanations</span>
-    </div>
+    
     <div class="hero__actions">
       <a href="#analyze" class="btn btn--primary btn--lg">
         Try Live Demo
@@ -67,7 +58,7 @@
           <path d="M5 12h14M12 5l7 7-7 7"/>
         </svg>
       </a>
-      <a href="#models" class="btn btn--ghost btn--lg">See Models</a>
+      
     </div>
   </div>
   <div class="hero__scroll-hint">
@@ -225,163 +216,6 @@
   </div>
 </section>
 
-<!-- ═══════════════  MODELS  ════════════ -->
-<section id="models" class="section section--alt">
-  <div class="container">
-    <div class="section__header">
-      <span class="section__label">02 · Model Comparison</span>
-      <h2 class="section__title">Performance Metrics</h2>
-      <p class="section__sub">
-        Five classifiers trained on IMDB reviews, evaluated on a 20 % held-out test set.
-        The best-performing model by F1 score is selected for live inference.
-      </p>
-    </div>
-
-    <div id="modelArea">
-  <table class="model-table">
-    <tr>
-      <th>Model</th>
-      <th>Accuracy</th>
-      <th>Precision</th>
-      <th>Recall</th>
-      <th>F1 Score</th>
-    </tr>
-    <tr>
-      <td>Logistic Regression</td>
-      <td>0.88</td>
-      <td>0.87</td>
-      <td>0.89</td>
-      <td>0.88</td>
-    </tr>
-    <tr>
-      <td>Naive Bayes</td>
-      <td>0.84</td>
-      <td>0.83</td>
-      <td>0.85</td>
-      <td>0.84</td>
-    </tr>
-    <tr>
-      <td>SVM</td>
-      <td>0.90</td>
-      <td>0.89</td>
-      <td>0.91</td>
-      <td>0.90</td>
-    </tr>
-  </table>
-</div>
-
-    <!-- Pipeline -->
-    <div class="pipeline">
-      <h3 class="pipeline__title">End-to-End System Pipeline</h3>
-      <div class="pipeline__steps">
-        <div class="pipe-step">
-          <div class="pipe-step__icon">📥</div>
-          <div class="pipe-step__name">Raw Input</div>
-          <div class="pipe-step__desc">Social media text / review</div>
-        </div>
-        <div class="pipe-step__arrow">›</div>
-        <div class="pipe-step">
-          <div class="pipe-step__icon">🧹</div>
-          <div class="pipe-step__name">Preprocessing</div>
-          <div class="pipe-step__desc">NLTK · Stopwords · Stemming</div>
-        </div>
-        <div class="pipe-step__arrow">›</div>
-        <div class="pipe-step">
-          <div class="pipe-step__icon">📐</div>
-          <div class="pipe-step__name">TF-IDF</div>
-          <div class="pipe-step__desc">15 k features · 1-2 grams</div>
-        </div>
-        <div class="pipe-step__arrow">›</div>
-        <div class="pipe-step">
-          <div class="pipe-step__icon">🤖</div>
-          <div class="pipe-step__name">ML Classifier</div>
-          <div class="pipe-step__desc">Best model selected</div>
-        </div>
-        <div class="pipe-step__arrow">›</div>
-        <div class="pipe-step">
-          <div class="pipe-step__icon">🔍</div>
-          <div class="pipe-step__name">RAG Retrieval</div>
-          <div class="pipe-step__desc">Jaccard overlap · corpus</div>
-        </div>
-        <div class="pipe-step__arrow">›</div>
-        <div class="pipe-step">
-          <div class="pipe-step__icon">💡</div>
-          <div class="pipe-step__name">Explanation</div>
-          <div class="pipe-step__desc">Aspects + evidence</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════════  ABOUT  ═════════════ -->
-<section id="about" class="section">
-  <div class="container">
-    <div class="section__header">
-      <span class="section__label">03 · Project Information</span>
-      <h2 class="section__title">About VibeMetrics 2.0</h2>
-    </div>
-    <div class="about-grid">
-
-      <div class="about-card about-card--accent">
-        <div class="about-card__icon">🎓</div>
-        <h3>Academic Details</h3>
-        <table class="info-table">
-          <tr><td>Student</td><td><strong>Kashish Jain</strong></td></tr>
-          <tr><td>Reg. No.</td><td>Y25246002</td></tr>
-          <tr><td>Class</td><td>M.Sc. AI &amp; BDA — 2nd Sem</td></tr>
-          <tr><td>Course</td><td>CSA-SEC-222 (Minor Project)</td></tr>
-        </table>
-      </div>
-
-      <div class="about-card">
-        <div class="about-card__icon">⚙️</div>
-        <h3>Tech Stack</h3>
-        <div class="tech-cloud">
-          <span class="tech">Python 3</span>
-          <span class="tech">Flask</span>
-          <span class="tech">scikit-learn</span>
-          <span class="tech">NLTK</span>
-          <span class="tech">TF-IDF</span>
-          <span class="tech">HTML 5</span>
-          <span class="tech">CSS 3</span>
-          <span class="tech">JavaScript</span>
-          <span class="tech">IMDB Dataset</span>
-          <span class="tech">GitHub Pages</span>
-          <span class="tech">VS Code</span>
-        </div>
-      </div>
-
-      <div class="about-card">
-        <div class="about-card__icon">🔬</div>
-        <h3>Key Features</h3>
-        <ul class="feature-list">
-          <li>Multi-model training &amp; automatic best-model selection</li>
-          <li>Aspect-Based Sentiment Analysis (7 categories)</li>
-          <li>RAG-style evidence retrieval from training corpus</li>
-          <li>Word-level positive/negative signal highlighting</li>
-          <li>Confidence scoring via sigmoid on decision boundary</li>
-          <li>Responsive, dark-mode professional UI</li>
-        </ul>
-      </div>
-
-      <div class="about-card">
-        <div class="about-card__icon">📊</div>
-        <h3>Dataset & Methodology</h3>
-        <p>
-          Trained on the <strong>IMDB Movie Reviews</strong> benchmark —
-          50 000 labelled reviews split evenly positive / negative.
-          Pre-processed with NLTK (lowercase, HTML stripping,
-          stop-word removal, Porter stemming) then vectorised with
-          TF-IDF (15 k features, 1–2 gram range, sublinear TF).
-          RAG retrieval uses Jaccard bag-of-words overlap — no
-          heavy embedding dependencies required.
-        </p>
-      </div>
-
-    </div>
-  </div>
-</section>
 
 <!-- ═══════════════  FOOTER  ════════════ -->
 <footer class="footer">
@@ -390,7 +224,7 @@
       VibeMetrics 2.0 &nbsp;·&nbsp; Kashish Jain &nbsp;·&nbsp;
       Dr. H.S. Gour Vishwavidyalaya, Sagar (M.P.) &nbsp;·&nbsp; 2025–26
     </p>
-    <p class="footer__stack">Python · Flask · scikit-learn · NLTK · HTML · CSS · JavaScript</p>
+    
   </div>
 </footer>
 
