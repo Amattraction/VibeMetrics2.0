@@ -98,20 +98,20 @@ def predict(text):
 
 # ── Aspect extraction ─────────────────────────────────
 ASPECT_MAP = {
-    'Quality':     ['quality', 'build', 'material', 'durable', 'sturdy', 'made'],
-    'Price/Value': ['price',   'cost',  'cheap', 'expensive', 'value', 'worth', 'money'],
-    'Service':     ['service', 'support', 'staff', 'help', 'customer', 'response'],
-    'Delivery':    ['delivery','shipping','arrived','package','fast','slow','dispatch'],
-    'Performance': ['performance','speed','works','function','efficient','reliable'],
-    'Design':      ['design', 'look', 'appearance', 'color', 'style', 'beautiful'],
-    'Usability':   ['easy', 'simple', 'use', 'install', 'setup', 'confusing', 'intuitive'],
+    'Direction':      ['direction', 'directed', 'director', 'pacing', 'vision', 'filmmaking'],
+    'Acting':         ['acting', 'performance', 'actor', 'actress', 'cast', 'portrayed', 'character'],
+    'Screenplay':     ['screenplay', 'script', 'writing', 'dialogue', 'plot', 'story', 'narrative'],
+    'Cinematography': ['cinematography', 'visuals', 'photography', 'shot', 'camera', 'beautiful'],
+    'Music/Score':    ['music', 'score', 'soundtrack', 'sound', 'audio', 'composition'],
+    'Editing':        ['editing', 'cuts', 'runtime', 'long', 'short', 'tight', 'drags'],
+    'Emotions':       ['emotional', 'moving', 'touching', 'powerful', 'boring', 'engaging', 'gripping'],
 }
 POS_WORDS = {'good','great','excellent','amazing','fantastic','best','love','perfect',
-             'wonderful','awesome','brilliant','superb','happy','satisfied','recommend',
-             'beautiful','fast','efficient','reliable','outstanding','impressive','nice'}
-NEG_WORDS = {'bad','terrible','awful','horrible','poor','worst','hate','broken',
-             'defective','disappointed','useless','fake','slow','damaged','failed',
-             'waste','regret','disgusting','misleading','frustrating','annoying','cheap'}
+             'wonderful','awesome','brilliant','superb','masterful','outstanding','impressive',
+             'beautiful','stunning','powerful','gripping','engaging','compelling','recommend'}
+NEG_WORDS = {'bad','terrible','awful','horrible','poor','worst','hate','boring',
+             'disappointing','disappointment','dreadful','weak','shallow','incoherent',
+             'frustrating','annoying','unearned','forced','wooden','waste','avoid'}
 
 def extract_aspects(text):
     lower = text.lower()

@@ -4,17 +4,20 @@
 
 // ── Sample texts ────────────────────────────────────
 const SAMPLES = {
-  pos: 'Absolutely love this product! The build quality is outstanding and the design looks beautiful. ' +
-       'Delivery was incredibly fast — arrived two days early. Customer service was helpful and responsive. ' +
-       'Excellent value for money, would highly recommend to everyone. Five stars without hesitation!',
+  pos: 'One of the finest films I have seen in years. The direction is masterful, the performances are ' +
+       'outstanding, and the screenplay is sharp from start to finish. Every scene feels purposeful. ' +
+       'The cinematography is stunning and the score elevates every moment beautifully. ' +
+       'A rare film that is both emotionally powerful and intellectually engaging. Highly recommended.',
 
-  neg: 'Worst purchase I have ever made. The product broke after just one day of use and the quality is ' +
-       'absolutely terrible. Customer service was completely unhelpful and refused to process my refund. ' +
-       'Arrived damaged, nothing like the photos. Total waste of money — avoid this at all costs.',
+  neg: 'A complete disappointment. The plot is incoherent, the characters are shallow, and the dialogue ' +
+       'feels forced throughout. The pacing is dreadful — the film drags for nearly two hours with no ' +
+       'payoff whatsoever. The performances are wooden and the ending is frustrating and entirely unearned. ' +
+       'One of the worst films released this year. Avoid it entirely.',
 
-  mix: 'The design looks really nice and delivery was fast, which I appreciated. However the build quality ' +
-       'feels a bit cheap for the price and the setup process was quite confusing. Customer service was ' +
-       'helpful when I contacted them. Overall an average experience — decent product but not worth the cost.'
+  mix: 'The visuals are genuinely impressive and the lead performance is strong, but the script lets ' +
+       'everything down. The first half builds real tension, then the second half loses its way completely. ' +
+       'Some scenes are brilliant, others feel rushed and underdeveloped. A frustrating watch — ' +
+       'there is a great film buried here, but it never quite comes together.'
 };
 
 // ── DOM ─────────────────────────────────────────────
@@ -65,6 +68,7 @@ async function runAnalysis() {
     }
 
     renderAll(data, text);
+    saveHistory(text, data);
 
   } catch {
     showError('Connection error. Make sure the server is running.');
@@ -282,9 +286,61 @@ function animateNum(id, from, to, dur) {
 
 function toggleMenu() { /* mobile nav — extend if needed */ }
 
+// ── History ──────────────────────────────────────────
+function saveHistory(text, data) {
+  const history = JSON.parse(sessionStorage.getItem('vm2_history') || '[]');
+  history.unshift({
+    id:         Date.now(),
+    text:       truncate(text, 100),
+    fullText:   text,
+    label:      data.label,
+    confidence: data.confidence,
+    time:       new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+  });
+  if (history.length > 5) history.pop();
+  sessionStorage.setItem('vm2_history', JSON.stringify(history));
+  renderHistory();
+}
+
+function renderHistory() {
+  const history = JSON.parse(sessionStorage.getItem('vm2_history') || '[]');
+  const empty   = $('historyEmpty');
+  const list    = $('historyList');
+  if (!list) return;
+
+  if (!history.length) {
+    if (empty) empty.style.display = 'block';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+
+  list.innerHTML = history.map(e => {
+    const isPos = e.label === 'Positive';
+    return `
+      <div class="hist-row" onclick="reloadHistory(${e.id})">
+        <span class="hist-dot ${isPos ? 'hist-dot--pos' : 'hist-dot--neg'}"></span>
+        <span class="hist-text">${esc(e.text)}</span>
+        <span class="hist-label ${isPos ? 'hist-label--pos' : 'hist-label--neg'}">${e.label}</span>
+        <span class="hist-conf">${e.confidence}%</span>
+        <span class="hist-time">${e.time}</span>
+      </div>`;
+  }).join('');
+}
+
+function reloadHistory(id) {
+  const history = JSON.parse(sessionStorage.getItem('vm2_history') || '[]');
+  const entry   = history.find(h => h.id === id);
+  if (!entry) return;
+  input.value = entry.fullText;
+  input.dispatchEvent(new Event('input'));
+  document.getElementById('analyze').scrollIntoView({ behavior: 'smooth' });
+  setTimeout(runAnalysis, 350);
+}
+
 // ── Boot ─────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   loadModelInfo();
+  renderHistory();
 
   analyzeBtn.addEventListener('click', runAnalysis);
 
