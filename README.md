@@ -1,178 +1,140 @@
-# VibeMetrics 2.0 — Explainable Sentiment Analysis
+VibeMetrics 2.0 — Explainable Sentiment Analysis System
+Minor Project · M.Sc. Artificial Intelligence & Big Data Analytics (Semester II)
+Course: CSA-SEC-222
+Student: Kashish Jain (Reg. No. Y25246002)
+Institution: Dr. Harisingh Gour Vishwavidyalaya, Sagar (M.P.)
+Live Demo: 
 
-> **Minor Project** · MSc AI & BDA (2nd Semester) · Course: CSA-SEC-222
-> **Student:** Kashish Jain · Reg. No. Y25246002
-> **Supervisor:** Dr. Abhishek Bansal
-> **Institution:** Dr. Harisingh Gour Vishwavidyalaya, Sagar (M.P.)
-> **Live Demo:** https://vibemetrics-2-0.onrender.com
+Project Overview
+Traditional sentiment analysis systems typically provide only a classification label such as positive or negative, without explaining how the decision was made. This project addresses that limitation by developing an explainable sentiment analysis system that enhances transparency and interpretability.
 
----
+VibeMetrics 2.0 provides explanations at multiple levels:
 
-## What This Project Does
+Word Level: Highlights important words influencing the prediction
 
-Standard sentiment classifiers return a label — *positive* or *negative* — with no explanation. VibeMetrics 2.0 addresses this by making the prediction **explainable** at three levels:
+Aspect Level: Identifies sentiment for specific aspects such as quality, price, and service
 
-1. **Word level** — highlights which specific words drove the classification
-2. **Aspect level** — identifies sentiment per category (Quality, Price, Service, Delivery, etc.)
-3. **Evidence level** — retrieves similar examples from the training corpus to support the prediction (RAG-style retrieval)
+Evidence Level: Retrieves similar examples from the dataset to support the prediction (retrieval-based approach)
 
----
-
-## Tech Stack
-
-| Layer | Technology |
-|---|---|
-| Backend | Python 3, Flask |
-| ML | scikit-learn (TF-IDF + 5 classifiers) |
-| NLP Preprocessing | NLTK (stopwords, Porter stemming) |
-| Frontend | HTML, CSS, JavaScript (vanilla) |
-| Deployment | Render (backend), GitHub (version control) |
-| Dataset | IMDB Movie Reviews — 50,000 labelled samples |
-
----
-
-## Project Structure
-
-```
+Technology Stack
+Component	Technology Used
+Backend	Python, Flask
+Machine Learning	scikit-learn (TF-IDF + classifiers)
+NLP Processing	NLTK
+Frontend	HTML, CSS, JavaScript
+Deployment	Render
+Version Control	GitHub
+Dataset	IMDb Movie Reviews (50,000 samples)
+Project Structure
 VibeMetrics2.0/
 │
-├── app.py                  # Flask app — routes, inference, API
-├── train_model.py          # Trains all models, saves best by F1
-├── wsgi.py                 # Gunicorn entry point
-├── Procfile                # Render process config
-├── requirements.txt        # Python dependencies
+├── app.py                  # Flask application (routes & API)
+├── train_model.py          # Model training script
+├── wsgi.py                 # Deployment entry point
+├── Procfile                # Deployment configuration
+├── requirements.txt        # Dependencies
 │
 ├── model/
-│   ├── best_model.pkl      # Serialised best pipeline (TF-IDF + classifier)
-│   ├── model_results.json  # Accuracy / Precision / Recall / F1 for all models
-│   └── rag_corpus.json     # Sampled training examples for RAG retrieval
+│   ├── best_model.pkl
+│   ├── model_results.json
+│   └── rag_corpus.json
 │
 ├── templates/
-│   └── index.html          # Jinja2 HTML template
+│   └── index.html
 │
 └── static/
     ├── css/style.css
     └── js/main.js
-```
-
----
-
-## How to Run Locally
-
-```bash
-# 1. Clone and open
+Running the Project Locally
+# Clone repository
 git clone https://github.com/Amattraction/VibeMetrics2.0.git
 cd VibeMetrics2.0
 
-# 2. Create virtual environment
+# Create virtual environment
 python -m venv venv
 venv\Scripts\activate        # Windows
-source venv/bin/activate     # macOS / Linux
+source venv/bin/activate     # macOS/Linux
 
-# 3. Install dependencies
+# Install dependencies
 pip install -r requirements.txt
 
-# 4. Train the model (generates model/ artefacts)
+# Train the model
 python train_model.py
 
-# 5. Start the server
+# Run application
 python app.py
-# → http://localhost:5000
-```
+Access at: http://localhost:5000
 
-> The training script works without the IMDB CSV — it falls back to a balanced synthetic corpus. To use the full dataset, download `IMDB Dataset.csv` from [Kaggle](https://www.kaggle.com/datasets/lakshmi25npathi/imdb-dataset-of-50k-movie-reviews), rename it `imdb.csv`, and place it in a `data/` folder before running step 4.
-
----
-
-## ML Pipeline
-
-```
+Machine Learning Pipeline
 Raw Text
-   │
-   ▼
+   ↓
 Preprocessing (NLTK)
-  • Lowercase, remove HTML / URLs / mentions
-  • Remove non-alphabetic characters
-  • Strip stopwords
-  • Porter stemming
-   │
-   ▼
-TF-IDF Vectorisation
-  • 15,000 features, unigrams + bigrams
-  • Sublinear TF scaling, min_df = 2
-   │
-   ▼
-Classifier  (best model selected by F1 on 20% held-out test set)
-  • Naive Bayes       (MultinomialNB)
-  • Logistic Regression
-  • SVM               (LinearSVC)
-  • Random Forest
-  • KNN
-   │
-   ▼
+   ↓
+TF-IDF Feature Extraction
+   ↓
+Machine Learning Model
+   ↓
+Prediction
+   ↓
 Explainability Layer
-  • Word highlights   — lexicon-based positive/negative signal detection
-  • Aspect analysis   — keyword matching across 7 predefined aspect categories
-  • RAG retrieval     — Jaccard bag-of-words overlap against training corpus
-```
+Preprocessing includes:
+Lowercasing
 
----
+Removal of noise (HTML, symbols, etc.)
 
-## API Endpoints
+Stopword removal
 
-| Method | Route | Description |
-|---|---|---|
-| `GET` | `/` | Serves the web UI |
-| `POST` | `/analyze` | Returns prediction + explanation for input text |
-| `GET` | `/metrics` | Returns model comparison results (JSON) |
-| `GET` | `/health` | Health check — confirms model load status |
+Stemming
 
-**Sample `/analyze` request:**
-```json
-{ "text": "Delivery was fast but the build quality feels cheap." }
-```
+Models Used:
+Naïve Bayes
 
-**Sample `/analyze` response:**
-```json
-{
-  "label": "Negative",
-  "confidence": 73.2,
-  "aspects": [
-    { "aspect": "Delivery",    "sentiment": "Positive", "score": 81.4 },
-    { "aspect": "Quality",     "sentiment": "Negative", "score": 76.9 },
-    { "aspect": "Price/Value", "sentiment": "Negative", "score": 68.3 }
-  ],
-  "highlighted": [
-    { "word": "fast",  "type": "positive" },
-    { "word": "cheap", "type": "negative" }
-  ],
-  "similar": [
-    "Shipped quickly but the material feels very flimsy for the price."
-  ],
-  "word_count": 12
-}
-```
+Logistic Regression
 
----
+Support Vector Machine
 
-## Dataset
+Random Forest
 
-**IMDB Movie Reviews** — Maas et al., 2011
-- 50,000 reviews, balanced: 25,000 positive / 25,000 negative
-- Standard benchmark for binary sentiment classification
-- Source: https://ai.stanford.edu/~amaas/data/sentiment/
+K-Nearest Neighbors
 
----
+Explainability Features
+The system improves interpretability through:
 
-## Honest Limitations
+Word Highlighting: Identifies key positive/negative words
 
-- The RAG retrieval uses Jaccard word-overlap, not dense embeddings — it is fast and dependency-free but less semantically precise than vector search.
-- Aspect sentiment is rule-based (keyword matching), not trained — it can misfire on sarcastic or complex sentences.
-- The model is trained on movie reviews; accuracy on domain-specific text (medical, legal, code) will be lower.
+Aspect-Based Analysis: Detects sentiment for different categories
 
----
+Retrieval-Based Explanation: Finds similar examples from training data
 
-## License
+API Endpoints
+Method	Endpoint	Description
+GET	/	Web interface
+POST	/analyze	Sentiment + explanation
+GET	/metrics	Model performance
+GET	/health	System status
+Dataset
+The system uses the IMDb Movie Reviews Dataset (Maas et al., 2011):
 
-Kashish Jain (@Amattraction)
-Submitted as an academic minor project. For educational use only.
+50,000 labeled reviews
+
+Balanced dataset (positive and negative)
+
+Widely used benchmark dataset
+
+Source: 
+
+Limitations
+Retrieval uses word overlap instead of semantic embeddings
+
+Aspect detection is rule-based
+
+Performance may vary across different domains
+
+Difficulty handling sarcasm and complex expressions
+
+Conclusion
+This project demonstrates how sentiment analysis can be enhanced with explainability techniques. By combining machine learning, aspect-based analysis, and retrieval methods, it provides both accurate predictions and meaningful insights.
+
+License
+Developed by Kashish Jain for academic purposes.
+Intended for educational use only.
