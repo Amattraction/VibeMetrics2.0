@@ -1,31 +1,42 @@
-VibeMetrics 2.0 — Explainable Sentiment Analysis System
-Minor Project · M.Sc. Artificial Intelligence & Big Data Analytics (Semester II)
-Course: CSA-SEC-222
-Student: Kashish Jain (Reg. No. Y25246002)
-Institution: Dr. Harisingh Gour Vishwavidyalaya, Sagar (M.P.)
-Live Demo: 
+# VibeMetrics 2.0 — Explainable Sentiment Analysis System
 
-Project Overview
-Traditional sentiment analysis systems typically provide only a classification label such as positive or negative, without explaining how the decision was made. This project addresses that limitation by developing an explainable sentiment analysis system that enhances transparency and interpretability.
+**Minor Project** · M.Sc. Artificial Intelligence & Big Data Analytics (Semester II)
+**Course:** CSA-SEC-222
+**Student:** Kashish Jain (Reg. No. Y25246002)
+**Institution:** Dr. Harisingh Gour Vishwavidyalaya, Sagar (M.P.)
+**Live Demo:** https://vibemetrics-2-0.onrender.com
 
-VibeMetrics 2.0 provides explanations at multiple levels:
+---
 
-Word Level: Highlights important words influencing the prediction
+## Project Overview
 
-Aspect Level: Identifies sentiment for specific aspects such as quality, price, and service
+Traditional sentiment analysis systems return only a classification label — positive or negative — without explaining how that decision was reached. VibeMetrics 2.0 addresses this limitation by building an explainable sentiment analysis system that enhances transparency and interpretability.
 
-Evidence Level: Retrieves similar examples from the dataset to support the prediction (retrieval-based approach)
+The system provides explanations at three levels:
 
-Technology Stack
-Component	Technology Used
-Backend	Python, Flask
-Machine Learning	scikit-learn (TF-IDF + classifiers)
-NLP Processing	NLTK
-Frontend	HTML, CSS, JavaScript
-Deployment	Render
-Version Control	GitHub
-Dataset	IMDb Movie Reviews (50,000 samples)
-Project Structure
+- **Word Level:** Highlights specific words that influenced the prediction
+- **Aspect Level:** Identifies sentiment for individual aspects such as Direction, Acting, Screenplay, Cinematography, and Editing
+- **Evidence Level:** Retrieves similar examples from the training corpus using keyword-overlap similarity to support the prediction
+
+---
+
+## Technology Stack
+
+| Component | Technology |
+|---|---|
+| Backend | Python, Flask |
+| Machine Learning | scikit-learn (TF-IDF + classifiers) |
+| NLP Processing | NLTK |
+| Frontend | HTML, CSS, JavaScript |
+| Deployment | Render |
+| Version Control | GitHub |
+| Dataset | IMDb Movie Reviews (50,000 samples) |
+
+---
+
+## Project Structure
+
+```
 VibeMetrics2.0/
 │
 ├── app.py                  # Flask application (routes & API)
@@ -45,7 +56,13 @@ VibeMetrics2.0/
 └── static/
     ├── css/style.css
     └── js/main.js
-Running the Project Locally
+```
+
+---
+
+## Running the Project Locally
+
+```bash
 # Clone repository
 git clone https://github.com/Amattraction/VibeMetrics2.0.git
 cd VibeMetrics2.0
@@ -58,83 +75,91 @@ source venv/bin/activate     # macOS/Linux
 # Install dependencies
 pip install -r requirements.txt
 
-# Train the model
+# Train the model (generates model/ artefacts)
 python train_model.py
 
 # Run application
 python app.py
-Access at: http://localhost:5000
+```
 
-Machine Learning Pipeline
+Access at: **http://localhost:5000**
+
+---
+
+## Machine Learning Pipeline
+
+```
 Raw Text
    ↓
 Preprocessing (NLTK)
+— Lowercasing
+— Noise removal (HTML tags, URLs, symbols)
+— Stopword removal
+— Porter Stemming
    ↓
 TF-IDF Feature Extraction
+— 15,000 features, unigrams + bigrams, sublinear TF scaling
    ↓
-Machine Learning Model
-   ↓
-Prediction
+Sentiment Classification
+— Best model selected by F1 score on 20% held-out test set
    ↓
 Explainability Layer
-Preprocessing includes:
-Lowercasing
+— Word highlights, aspect scores, corpus retrieval
+```
 
-Removal of noise (HTML, symbols, etc.)
+---
 
-Stopword removal
+## Model Performance
 
-Stemming
+| Model | Accuracy | F1 Score | Remark |
+|---|---|---|---|
+| Logistic Regression | 89.97% | 90.09% | **Best — selected for deployment** |
+| SVM | 89.25% | 89.30% | Close runner-up |
+| Naive Bayes | 87.07% | 87.20% | Beats Maas et al. 2011 baseline |
+| Random Forest | 85.19% | 85.17% | Consistent with ensemble baselines |
+| KNN | 80.92% | 82.13% | Weakest — high memory cost at inference |
 
-Models Used:
-Naïve Bayes
+---
 
-Logistic Regression
+## Explainability Features
 
-Support Vector Machine
+- **Word Highlighting:** Identifies positive and negative signal words in the input
+- **Aspect-Based Analysis:** Detects sentiment across seven movie-review categories — Direction, Acting, Screenplay, Cinematography, Music/Score, Editing, Emotions
+- **Retrieval-Based Explanation:** Finds the three most similar examples from the training corpus using Jaccard bag-of-words overlap
+- **Session History:** Stores the last five analyses of a session for quick reference and re-analysis
 
-Random Forest
+---
 
-K-Nearest Neighbors
+## API Endpoints
 
-Explainability Features
-The system improves interpretability through:
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/` | Web interface |
+| POST | `/analyze` | Sentiment prediction + explanation |
+| GET | `/metrics` | Model performance results |
+| GET | `/health` | System status check |
 
-Word Highlighting: Identifies key positive/negative words
+---
 
-Aspect-Based Analysis: Detects sentiment for different categories
+## Dataset
 
-Retrieval-Based Explanation: Finds similar examples from training data
+**IMDb Movie Reviews** — Maas et al., 2011
+- 50,000 labelled reviews, balanced: 25,000 positive / 25,000 negative
+- Standard benchmark for binary sentiment classification
+- Source: https://ai.stanford.edu/~amaas/data/sentiment/
 
-API Endpoints
-Method	Endpoint	Description
-GET	/	Web interface
-POST	/analyze	Sentiment + explanation
-GET	/metrics	Model performance
-GET	/health	System status
-Dataset
-The system uses the IMDb Movie Reviews Dataset (Maas et al., 2011):
+---
 
-50,000 labeled reviews
+## Limitations
 
-Balanced dataset (positive and negative)
+- Retrieval uses Jaccard word overlap, not dense semantic embeddings
+- Aspect detection is rule-based, not learned from data
+- Model trained on movie reviews — accuracy may vary on other text domains
+- Sarcasm and complex linguistic expressions are not fully handled
+- Hosted on Render free tier — cold start of approximately 30 seconds after inactivity
 
-Widely used benchmark dataset
+---
 
-Source: 
+## License
 
-Limitations
-Retrieval uses word overlap instead of semantic embeddings
-
-Aspect detection is rule-based
-
-Performance may vary across different domains
-
-Difficulty handling sarcasm and complex expressions
-
-Conclusion
-This project demonstrates how sentiment analysis can be enhanced with explainability techniques. By combining machine learning, aspect-based analysis, and retrieval methods, it provides both accurate predictions and meaningful insights.
-
-License
-Developed by Kashish Jain for academic purposes.
-Intended for educational use only.
+Developed by Kashish Jain for academic purposes. Educational use only.
